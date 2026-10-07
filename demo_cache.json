@@ -1,0 +1,26 @@
+{
+  "what are the total sales and profit by region": {
+    "question": "What are the total sales and profit by region?",
+    "code": "d = df.copy()\nresult = d.groupby('Region', dropna=False)[['Sales', 'Profit']].sum().round(0).sort_values('Sales', ascending=False)\nfig = px.bar(result.reset_index(), x='Region', y=['Sales', 'Profit'], barmode='group',\n             title='Total Sales and Profit by Region', labels={'value': 'Amount (\u20b9)', 'variable': 'Metric'})\ntop = result.index[0]\nsummary = f\"{top} leads with \u20b9{result.loc[top, 'Sales']:,.0f} in sales and \u20b9{result.loc[top, 'Profit']:,.0f} in profit across {len(result)} region labels.\""
+  },
+  "show the monthly sales trend": {
+    "question": "Show the monthly sales trend",
+    "code": "d = df.copy()\nd['Order_Date'] = pd.to_datetime(d['Order_Date'], dayfirst=True, errors='coerce')\nresult = d.set_index('Order_Date').resample('MS')['Sales'].sum().round(0).to_frame('Sales')\nfig = px.line(result.reset_index(), x='Order_Date', y='Sales', markers=True,\n              title='Monthly Sales Trend', labels={'Order_Date': 'Month', 'Sales': 'Sales (\u20b9)'})\npeak = result['Sales'].idxmax()\nsummary = f\"Sales peak in {peak:%B %Y} at \u20b9{result['Sales'].max():,.0f}, with a clear spike every Q4 (Oct\u2013Dec).\""
+  },
+  "why is profit negative in furniture": {
+    "question": "Why is profit negative in Furniture?",
+    "code": "d = df[df['Category'] == 'Furniture'].copy()\nresult = d.groupby('Sub_Category').agg(Total_Sales=('Sales', 'sum'), Total_Profit=('Profit', 'sum'),\n                                       Avg_Discount=('Discount', 'mean'), Orders=('Order_ID', 'count')).round(2)\nresult['Profit_Margin_%'] = (result['Total_Profit'] / result['Total_Sales'] * 100).round(1)\nresult = result.sort_values('Total_Profit')\nfig = px.scatter(result.reset_index(), x='Avg_Discount', y='Profit_Margin_%', size='Total_Sales', text='Sub_Category',\n                 title='Furniture: Discount vs Profit Margin', labels={'Avg_Discount': 'Average discount', 'Profit_Margin_%': 'Profit margin (%)'})\nfig.update_traces(textposition='top center')\nfig.add_hline(y=0, line_dash='dash')\nworst = result.index[0]\nsummary = (f\"Furniture's losses come from {worst}: it loses \u20b9{abs(result.loc[worst, 'Total_Profit']):,.0f} at an average \"\n           f\"{result.loc[worst, 'Avg_Discount']:.0%} discount, while other furniture lines with lower discounts stay profitable.\")"
+  },
+  "which region is the best": {
+    "question": "Which region is the best?",
+    "code": "d = df.copy()\nresult = d.groupby('Region')['Sales'].sum().round(0).sort_values(ascending=False).to_frame('Total_Sales')\nfig = px.bar(result.reset_index(), x='Region', y='Total_Sales', title='Best Region by Total Sales')\nsummary = f\"{result.index[0]} is the best region with \u20b9{result['Total_Sales'].iloc[0]:,.0f} in total sales.\""
+  },
+  "which region is the best by profit margin": {
+    "question": "Which region is the best by profit margin?",
+    "code": "d = df[df['Region'].notna() & (df['Region'] != 'Unknown')].copy()\nresult = d.groupby('Region').agg(Orders=('Order_ID', 'count'), Total_Sales=('Sales', 'sum'), Total_Profit=('Profit', 'sum'))\nresult['Margin_%'] = (result['Total_Profit'] / result['Total_Sales'] * 100).round(1)\nresult = result.round({'Total_Sales': 0, 'Total_Profit': 0}).sort_values('Margin_%', ascending=False)\nfig = px.bar(result.reset_index(), x='Region', y='Margin_%', title='Profit Margin by Region',\n             labels={'Margin_%': 'Profit margin (%)'})\ntop_sales = result['Total_Sales'].idxmax()\nsummary = (f\"By profit margin, {result.index[0]} is best at {result['Margin_%'].iloc[0]:.1f}%, while {top_sales}, the top region \"\n           f\"by total sales, earns {result.loc[top_sales, 'Margin_%']:.1f}%. 'Best' depends on the metric you choose.\")"
+  },
+  "which customer segment gives the highest profit margin": {
+    "question": "Which customer segment gives the highest profit margin?",
+    "code": "d = df[df['Customer_Segment'].notna() & (df['Customer_Segment'] != 'Unknown')].copy()\nresult = d.groupby('Customer_Segment')[['Sales', 'Profit']].sum()\nresult['Margin_%'] = (result['Profit'] / result['Sales'] * 100).round(1)\nresult = result.round({'Sales': 0, 'Profit': 0}).sort_values('Margin_%', ascending=False)\nfig = px.bar(result.reset_index(), x='Customer_Segment', y='Margin_%', title='Profit Margin by Customer Segment',\n             labels={'Margin_%': 'Profit margin (%)', 'Customer_Segment': 'Segment'})\nsummary = f\"{result.index[0]} has the highest profit margin at {result['Margin_%'].iloc[0]:.1f}%.\""
+  }
+}
