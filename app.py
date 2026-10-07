@@ -23,11 +23,11 @@ APP_DIR = Path(__file__).parent
 CACHE_FILE = APP_DIR / "demo_cache.json"
 
 PROVIDERS = {
-    "Groq (Llama)": {
+    "Groq": {
         "base_url": "https://api.groq.com/openai/v1",
         "key_env": "GROQ_API_KEY",
         "model_env": "GROQ_MODEL",
-        "default_model": "llama-3.3-70b-versatile",
+        "default_model": "openai/gpt-oss-120b",
     },
     "Google Gemini": {
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
